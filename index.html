@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+        }
+        .header {
+            background-color: #000000;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .header .logo {
+            height: 40px; /* Adjust logo size */
+            width: auto;
+        }
+        .header .survey-title {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            flex-grow: 1;
+            text-align: center;
+            margin-right: 50px;
+        }
+        .instructions {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e6;
+            border-radius: 8px;
+            padding: 15px 25px;
+            margin: 15px auto;
+            max-width: 1200px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            font-size: 14px;
+            color: #333;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        .instructions-note {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            padding: 15px 25px 25px 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: left;
+            align-items: center;
+        }
+        .info-box .tool-selection {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-box .tool-selection label {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            z-index: 20;
+        }
+        .dropdown-toggle {
+            padding: 5px 10px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            border: 1px solid #d1d9e6;
+            border-radius: 4px;
+            background-color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 600px;
+        }
+        .dropdown-toggle::after {
+            content: '▼';
+            font-size: 10px;
+            margin-left: 5px;
+        }
+        .dropdown-toggle[disabled] {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .dropdown-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 600px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border: 1px solid #d1d9e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+        }
+        .dropdown-list.show {
+            display: block;
+        }
+        .dropdown-search {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 14px;
+            border: none;
+            border-bottom: 1px solid #d1d9e6;
+            box-sizing: border-box;
+            outline: none;
+            font-family: Arial, sans-serif;
+        }
+        .dropdown-search:focus {
+            border-bottom: 1px solid #4a90e2;
+        }
+        .dropdown-search[disabled] {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .dropdown-item {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dropdown-item input[type="checkbox"] {
+            margin: 0;
+        }
+        .dropdown-item label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            flex: 1;
+        }
+        .dropdown-item:hover {
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            table-layout: fixed;
+        }
+        thead {
+            position: relative;
+            z-index: 10;
+        }
+        th, td {
+            border: 1px solid #d1d9e6;
+            padding: 10px;
+            text-align: left;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        th {
+            background-color: #4a90e2;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        th:first-child,
+        td:first-child {
+            width: 150px;
+        }
+        td {
+            background-color: #f9fafc;
+        }
+        td.suggestion {
+            max-width: 300px;
+            min-width: 200px;
+            height: 40px;
+            vertical-align: top;
+            cursor: pointer;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            position: relative;
+        }
+        td.suggestion .suggestion-text {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tool-cell {
+            text-align: left;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"][disabled] {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4a90e2;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4a90e2;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .slider-value {
+            font-size: 14px;
+            color: #4a90e2;
+            font-weight: 500;
+            min-width: 60px;
+            text-align: left;
+        }
+        .slider-label {
+            font-size: 14px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        tr:hover td {
+            background-color: #f9f9f9;
+        }
+        tr.highlighted td {
+            background-color: #e6f7fa;
+        }
+        .tooltip {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            max-width: 300px;
+            text-align: left;
+        }
+        .suggestion:hover .tooltip {
+            opacity: 1;
+        }
+        input[type="checkbox"] {
+            cursor: pointer;
+        }
+        input[type="checkbox"][disabled] {
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: right;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"] {
+            background-color: #ff6f61;
+            color: white;
+        }
+        button[type="submit"]:hover {
+            background-color: #e65b50;
+        }
+        button[type="submit"][disabled] {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 20px;
+        }
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d9e6;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+        }
+        .modal-content textarea[disabled] {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .modal-content button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px 24px;
+        }
+        .modal-content button:hover {
+            background-color: #357abd;
+        }
+        .modal-content button[disabled] {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .disabled-message {
+            color: #000000;
+            font-weight: 500;
+            font-size:20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <img src="company.png" alt="Company Logo" class="logo">
+        <span class="survey-title">EEX RDT Digital Applications Tools Survey</span>
+    </div>
+    <div class="instructions-note">
+        <strong>Note:</strong> 
+          1. Only the tools selected in the dropdown are taken for feedback.   
+          2. Only one feedback submission is allowed per user.
+    </div>
+    <div class="instructions-note">
+        <strong>Disclaimer:
+          This Survey is completely anonymous </strong> 
+    </div>
+    <div class="container">
+        <div id="disabledMessage" class="disabled-message" style="display: none;">
+            <strong>Your feedback is successfully submitted</strong>
+        </div>
+        <div class="info-box">
+            <div class="tool-selection">
+                <label>Please select tool to give feedback:</label>
+                <div class="custom-dropdown">
+                    <button class="dropdown-toggle" id="dropdownToggle">Select Tools</button>
+                    <div class="dropdown-list" id="toolList">
+                        <input type="text" class="dropdown-search" placeholder="Search tools..." id="toolSearch">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table id="surveyTable">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div class="button-container">
+            <button type="submit" id="submitButton">Submit</button>
+        </div>
+    </div>
+    <div id="inputModal" class="modal">
+        <div class="modal-content">
+            <textarea id="modalInput" placeholder="Please mention userId (Optional) to connect with you later and understand more."></textarea>
+            <button onclick="submitModal()">Save</button>
+        </div>
+    </div>
+    <script src="config.js?v=6"></script>
+    <script>
+        // Mapping of slider values to labels
+        const scaleLabels = {
+            1: 'Poor',
+            2: 'Fair',
+            3: 'Average',
+            4: 'Good',
+            5: 'Excellent'
+        };
+
+        let currentRow = null;
+        let selectedTools = [];
+        let allFeedbackData = [];
+        let userId = '';
+        let toolFeedbackMap = new Map();
+        let hasSubmitted = false;
+
+        // Debug: Check if instructions div is present
+        document.addEventListener('DOMContentLoaded', function() {
+            const instructionsDiv = document.querySelector('.instructions');
+            if (instructionsDiv) {
+                console.log('Instructions div is present in the DOM:', instructionsDiv);
+            } else {
+                console.error('Instructions div is missing from the DOM!');
+            }
+        });
+
+        // Debounce function to prevent multiple rapid clicks
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Fetch user ID and check submission status
+        async function fetchUserIdAndStatus(attempt = 1, maxAttempts = 3) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            try {
+                console.log(`Attempt ${attempt}: Fetching user ID from AuthenticateUser...`);
+                const response = await fetch('http://fr08187vma.automotive-wan.com:8095/api/AuthenticateUser', {
+                    credentials: 'include',
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                console.log('AuthenticateUser response status:', response.status);
+                if (!response.ok && attempt < maxAttempts) {
+                    console.warn(`AuthenticateUser attempt ${attempt} failed: ${response.statusText}. Retrying...`);
+                    return setTimeout(() => fetchUserIdAndStatus(attempt + 1, maxAttempts), 2000);
+                }
+                if (!response.ok) {
+                    throw new Error(`AuthenticateUser failed: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log('AuthenticateUser response data:', data);
+                userId = data?.user?.ID || data?.user?.id || data?.userId || 'Guest';
+                console.log('User ID set to:', userId);
+
+                console.log(`Attempt ${attempt}: Checking submission status for user:`, userId);
+                const submissionController = new AbortController();
+                const submissionTimeoutId = setTimeout(() => submissionController.abort(), 5000);
+                const submissionResponse = await fetch(`http://10.103.180.125:5000/check-submission?userId=${encodeURIComponent(userId)}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                    signal: submissionController.signal
+                });
+                clearTimeout(submissionTimeoutId);
+                console.log('Check-submission response status:', submissionResponse.status);
+                console.log('Check-submission response headers:', submissionResponse.headers);
+                const submissionData = await submissionResponse.json();
+                console.log('Check-submission response data:', submissionData);
+                hasSubmitted = submissionData?.submitted === true || false;
+                console.log('Has submitted:', hasSubmitted);
+
+                if (hasSubmitted) {
+                    disableAllInputs();
+                    document.getElementById('disabledMessage').style.display = 'block';
+                } else {
+                    console.log('Generating table header and populating tool list...');
+                    generateTableHeader();
+                    populateToolList();
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('Error fetching user ID or submission status:', error);
+                userId = 'Guest';
+                alert(`Error initializing survey: ${error.message}. Please try again later.`);
+            }
+        }
+
+        function disableAllInputs() {
+            document.getElementById('dropdownToggle').disabled = true;
+            document.getElementById('toolSearch').disabled = true;
+            document.getElementById('submitButton').disabled = true;
+
+            const checkboxes = document.querySelectorAll('#toolList input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.disabled = true;
+            });
+
+            const sliders = document.querySelectorAll('.range-slider');
+            sliders.forEach(slider => {
+                slider.disabled = true;
+            });
+
+            const suggestionCells = document.querySelectorAll('.suggestion');
+            suggestionCells.forEach(cell => {
+                cell.style.cursor = 'not-allowed';
+                cell.removeEventListener('click', showModal);
+            });
+
+            document.getElementById('modalInput').disabled = true;
+            document.querySelector('.modal-content button').disabled = true;
+        }
+
+        function generateTableHeader() {
+            const tableHeader = document.getElementById('tableHeader');
+            try {
+                if (!surveyConfig || !surveyConfig.feedbackColumns) {
+                    throw new Error('surveyConfig or feedbackColumns is undefined');
+                }
+                let headerRow = `<tr><th>Tool</th>`;
+                surveyConfig.feedbackColumns.forEach(column => {
+                    headerRow += `<th>${column}</th>`;
+                });
+                headerRow += '<th>Any suggestions for improvement</th></tr>';
+                tableHeader.innerHTML = headerRow;
+            } catch (error) {
+                console.error('Error generating table header:', error);
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Tool</th>
+                        <th>How satisfied are you with perfomance and quality of application?</th>
+                        <th>How would you rate the speed and quality of user support?</th>
+                        <th>How satisfied are you with overall application?</th>
+                        <th>Any suggestions for improvement</th>
+                    </tr>`;
+            }
+        }
+
+        function populateToolList() {
+            if (hasSubmitted) return;
+            const toolList = document.getElementById('toolList');
+            const tools = surveyConfig?.tools || ['Tool1', 'Tool2', 'Tool3'];
+            tools.forEach((tool, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="tool-${index}" data-tool="${tool}">
+                    <label for="tool-${index}">${tool}</label>
+                `;
+                toolList.appendChild(item);
+            });
+
+            toolList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (hasSubmitted) return;
+                    const tool = this.getAttribute('data-tool');
+                    if (this.checked) {
+                        selectedTools.push(tool);
+                    } else {
+                        selectedTools = selectedTools.filter(t => t !== tool);
+                    }
+                    updateTable();
+                });
+            });
+
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            const dropdownList = document.querySelector('.dropdown-list');
+            dropdownToggle.addEventListener('click', function() {
+                if (hasSubmitted) return;
+                dropdownList.classList.toggle('show');
+                if (dropdownList.classList.contains('show')) {
+                    document.getElementById('toolSearch').focus();
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (hasSubmitted) return;
+                if (!dropdownToggle.contains(e.target) && !dropdownList.contains(e.target)) {
+                    dropdownList.classList.remove('show');
+                }
+            });
+
+            const searchInput = document.getElementById('toolSearch');
+            searchInput.addEventListener('input', function() {
+                if (hasSubmitted) return;
+                const query = this.value.trim().toLowerCase();
+                const items = toolList.querySelectorAll('.dropdown-item');
+                items.forEach(item => {
+                    const toolName = item.querySelector('label').textContent.toLowerCase();
+                    item.style.display = toolName.includes(query) ? 'flex' : 'none';
+                });
+            });
+        }
+
+        function updateTable() {
+            if (hasSubmitted) return;
+            const tableBody = document.getElementById('tableBody');
+
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const tool = row.getAttribute('data-tool');
+                const sliders = row.querySelectorAll('.range-slider');
+                const suggestion = row.querySelector('.suggestion-text').textContent;
+
+                const feedbackColumns = surveyConfig?.feedbackColumns || [
+                    'How satisfied are you with perfomance and quality of application?',
+                    'How would you rate the speed and quality of user support?',
+                    'How satisfied are you with overall application?'
+                ];
+                const ratings = Array.from(sliders).map(s => s.value);
+
+                toolFeedbackMap.set(tool, {
+                    ratings,
+                    suggestion
+                });
+            });
+
+            tableBody.innerHTML = '';
+
+            selectedTools.forEach(tool => {
+                const savedData = toolFeedbackMap.get(tool) || {
+                    ratings: Array((surveyConfig?.feedbackColumns || ['Q1', 'Q2', 'Q3']).length).fill("1"),
+                    suggestion: ""
+                };
+
+                let row = `<tr data-tool="${tool}">
+                    <td class="tool-cell">${tool}</td>`;
+
+                const feedbackColumns = surveyConfig?.feedbackColumns || [
+                    'How satisfied are you with perfomance and quality of application?',
+                    'How would you rate the speed and quality of user support?',
+                    'How satisfied are you with overall application?'
+                ];
+                feedbackColumns.forEach((col, index) => {
+                    const value = savedData.ratings[index] || "1";
+                    row += `
+                        <td>
+                            <div class="slider-container">
+                                <input type="range" min="1" max="5" value="${value}" step="1" class="range-slider">
+                                <span class="slider-value">${value}</span>
+                                <span class="slider-label">${scaleLabels[value]}</span>
+                            </div>
+                        </td>`;
+                });
+
+                const suggestionText = savedData.suggestion || '';
+                const displayText = suggestionText.length > 20 ? suggestionText.slice(0, 20) + '...' : suggestionText;
+
+                row += `<td class="suggestion"><span class="suggestion-text">${displayText}</span><span class="tooltip">${suggestionText}</span></td></tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            addEventListeners();
+        }
+
+        async function updateExcel() {
+            if (hasSubmitted) {
+                alert('You have already submitted the survey.');
+                return;
+            }
+
+            const submitButton = document.getElementById('submitButton');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Submitting...';
+            submitButton.disabled = true;
+
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.querySelectorAll('tr');
+            const newFeedbackData = [];
+
+            rows.forEach(row => {
+                const tool = row.getAttribute('data-tool');
+                const sliders = row.querySelectorAll('.range-slider');
+                const suggestion = row.querySelector('.tooltip').textContent;
+
+                const rowData = {
+                    User: userId,
+                    Tool: tool,
+                    Date: new Date().toISOString()
+                };
+
+                const feedbackColumns = surveyConfig?.feedbackColumns || [
+                    'How satisfied are you with perfomance and quality of application?',
+                    'How would you rate the speed and quality of user support?',
+                    'How satisfied are you with overall application?'
+                ];
+                feedbackColumns.forEach((column, index) => {
+                    rowData[column] = sliders[index].value;
+                });
+
+                rowData['Suggestion'] = suggestion;
+                newFeedbackData.push(rowData);
+            });
+
+            if (newFeedbackData.length === 0) {
+                alert('No feedback to submit. Please select at least one tool and provide feedback.');
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                return;
+            }
+
+            try {
+                console.log('Sending feedback to backend:', JSON.stringify({ feedback: newFeedbackData }, null, 2));
+                const response = await fetch("http://10.103.180.125:5000/submit-survey", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ feedback: newFeedbackData }),
+                    credentials: 'same-origin'
+                });
+
+                if (response.status === 403) {
+                    const result = await response.json();
+                    hasSubmitted = true;
+                    disableAllInputs();
+                    document.getElementById('disabledMessage').style.display = 'block';
+                    alert(result.message || 'You have already submitted the survey.');
+                    submitButton.textContent = originalText;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}, ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('Backend response:', result);
+
+                // Disable further submissions immediately
+                hasSubmitted = true;
+                disableAllInputs();
+                document.getElementById('disabledMessage').style.display = 'block';
+
+                // Show alert only once
+                alert(result.message || 'Survey submitted successfully!');
+
+                // Clear data
+                selectedTools = [];
+                toolFeedbackMap.clear();
+                document.querySelectorAll('#toolList input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateTable();
+                submitButton.textContent = originalText;
+            } catch (error) {
+                console.error("Failed to send data to backend:", error);
+                alert(`Error: Could not submit data to server. ${error.message}`);
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        }
+
+        function highlightRow(event) {
+            if (hasSubmitted) return;
+            const allRows = document.querySelectorAll('tbody tr');
+            allRows.forEach(row => row.classList.remove('highlighted'));
+            const row = event.target.closest('tr');
+            row.classList.add('highlighted');
+        }
+
+        function removeHighlight() {
+            if (hasSubmitted) return;
+            const allRows = document.querySelectorAll('tbody tr');
+            allRows.forEach(row => row.classList.remove('highlighted'));
+        }
+
+        function updateSliderBackground(slider) {
+            if (hasSubmitted) return;
+            const value = slider.value;
+            const min = slider.min || 0;
+            const max = slider.max || 100;
+            const percentage = ((value - min) / (max - min)) * 100;
+            slider.style.background = `linear-gradient(to right, #4a90e2 ${percentage}%, #d3d3d3 ${percentage}%)`;
+        }
+
+        function showModal(suggestionCell) {
+            if (hasSubmitted) return;
+            currentRow = suggestionCell;
+            const existingSuggestion = suggestionCell.querySelector('.suggestion-text').textContent;
+            const modalInput = document.getElementById('modalInput');
+
+            modalInput.value = existingSuggestion.endsWith('...') 
+                ? suggestionCell.querySelector('.tooltip').textContent 
+                : existingSuggestion;
+
+            document.getElementById('inputModal').style.display = 'flex';
+            modalInput.focus();
+        }
+
+        function submitModal() {
+    if (hasSubmitted) return;
+    const input = document.getElementById('modalInput').value.trim(); // Get the input, even if empty
+    if (currentRow) { // Only check if currentRow exists
+        const suggestionTextElement = currentRow.querySelector('.suggestion-text');
+        const tooltipElement = currentRow.querySelector('.tooltip');
+
+        // Update suggestion text and tooltip, handling empty input
+        const maxLength = 20;
+        const truncatedText = input.length > maxLength ? input.substring(0, maxLength) + '...' : input || ''; // Use empty string if input is empty
+        suggestionTextElement.textContent = input.length > maxLength ? truncatedText : input || ' '; // Use space for display if empty to maintain cell height
+        tooltipElement.textContent = input || ''; // Set tooltip to empty if input is empty
+
+        // Update toolFeedbackMap with the new suggestion
+        const tool = currentRow.closest('tr').getAttribute('data-tool');
+        const sliders = currentRow.closest('tr').querySelectorAll('.range-slider');
+        const ratings = Array.from(sliders).map(s => s.value);
+        toolFeedbackMap.set(tool, {
+            ratings,
+            suggestion: input // Store the raw input, even if empty
+        });
+    }
+    closeModal();
+}
+
+        function closeModal() {
+            if (hasSubmitted) return;
+            document.getElementById('inputModal').style.display = 'none';
+            currentRow = null;
+        }
+
+        function addEventListeners() {
+            if (hasSubmitted) return;
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const sliders = row.querySelectorAll('.range-slider');
+                const suggestionCell = row.querySelector('.suggestion');
+
+                sliders.forEach(slider => {
+                    updateSliderBackground(slider);
+                    slider.addEventListener('input', function() {
+                        if (hasSubmitted) return;
+                        console.log(`Slider value changed to: ${this.value}`);
+                        const valueDisplay = this.parentElement.querySelector('.slider-value');
+                        const labelDisplay = this.parentElement.querySelector('.slider-label');
+                        valueDisplay.textContent = this.value;
+                        labelDisplay.textContent = scaleLabels[this.value];
+                        updateSliderBackground(this);
+
+                        const tool = row.getAttribute('data-tool');
+                        const ratings = Array.from(sliders).map(s => s.value);
+                        const suggestion = row.querySelector('.suggestion-text').textContent;
+                        toolFeedbackMap.set(tool, {
+                            ratings,
+                          suggestion
+                        });
+                    });
+
+                    slider.addEventListener('focus', highlightRow);
+                    slider.addEventListener('blur', removeHighlight);
+
+                    slider.addEventListener('keydown', function(event) {
+                        if (hasSubmitted) return;
+                        const key = event.key;
+                        const currentSlider = event.target;
+                        const currentRow = currentSlider.closest('tr');
+                        const currentCell = currentSlider.parentElement.parentElement;
+                        const cellIndex = Array.from(currentRow.children).indexOf(currentCell);
+                        let nextElement = null;
+
+                        if (key === 'ArrowRight' && cellIndex < currentRow.children.length - 1) {
+                            nextElement = currentRow.children[cellIndex + 1].querySelector('input[type="range"]');
+                        } else if (key === 'ArrowLeft' && cellIndex > 1) {
+                            nextElement = currentRow.children[cellIndex - 1].querySelector('input[type="range"]');
+                        } else if (key === 'ArrowDown' && currentRow.nextElementSibling) {
+                            const nextRow = currentRow.nextElementSibling;
+                            nextElement = nextRow.children[cellIndex].querySelector('input[type="range"]');
+                        } else if (key === 'ArrowUp' && currentRow.previousElementSibling) {
+                            const prevRow = currentRow.previousElementSibling;
+                            nextElement = prevRow.children[cellIndex].querySelector('input[type="range"]');
+                        }
+
+                        if (nextElement && !nextElement.disabled) {
+                            event.preventDefault();
+                            nextElement.focus();
+                            highlightRow({ target: nextElement });
+                        }
+                    });
+                });
+
+                suggestionCell.addEventListener('click', function() {
+                    if (hasSubmitted) return;
+                    showModal(suggestionCell);
+                });
+            });
+
+            document.getElementById('inputModal').addEventListener('click', function(e) {
+                if (hasSubmitted) return;
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (typeof surveyConfig === 'undefined') {
+                console.error('surveyConfig is not defined. Ensure config.js is loaded correctly.');
+                alert('Error initializing survey: Configuration is missing.');
+                return;
+            }
+            await fetchUserIdAndStatus();
+
+            // Add debounced submit button listener
+            const debouncedSubmit = debounce(function() {
+                const confirmation = confirm("Are you sure you want to submit? Please review and confirm that you’ve added feedback for all relevant tools, as you will not be able to make any changes after submission.");
+                if (confirmation) {
+                    updateExcel();
+                }
+            }, 300);
+            document.getElementById('submitButton').addEventListener('click', debouncedSubmit);
+        });
+    </script>
+</body>
+</html>
